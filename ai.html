@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[활동지] AI 기반 기업분석 및 모의투자 워크북</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* 1. 핵심 레이아웃 설정 */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: #f1f5f9;
+            font-family: 'Noto Sans KR', sans-serif;
+            color: #334155;
+            line-height: 1.6;
+            padding: 40px 0;
+        }
+
+        /* PDF 인쇄 버튼 */
+        .pdf-btn-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        .pdf-btn {
+            padding: 14px 28px;
+            background-color: #002d62;
+            color: #ffffff;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 45, 98, 0.3);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .pdf-btn:hover {
+            background-color: #00408f;
+            transform: translateY(-2px);
+        }
+
+        /* 메인 컨테이너 (세로형 워크시트) */
+        .worksheet-container {
+            width: 840px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+            padding: 60px 50px;
+            border-radius: 8px;
+        }
+
+        /* 2. 헤더 및 팀 정보 테이블 */
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 3px double #e2e8f0;
+            padding-bottom: 30px;
+            position: relative; /* 우측 상단 문구 위치를 위해 추가 */
+        }
+        .citi-header-text {
+            position: absolute;
+            top: -20px;
+            right: 0;
+            font-size: 13px;
+            font-weight: 600;
+            color: #002d62;
+            background: #f1f5f9;
+            padding: 5px 12px;
+            border-radius: 4px;
+        }
+        .main-tag {
+            display: inline-block;
+            background-color: #008080;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+        header h1 { font-size: 32px; color: #002d62; margin-bottom: 10px; }
+        header p { color: #64748b; font-size: 15px; }
+
+        .team-info-table {
+            width: 100%;
+            margin-top: 30px;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+        .team-info-table td {
+            border: 1px solid #cbd5e1;
+            padding: 10px 12px;
+            font-size: 14px;
+            text-align: left;
+            height: 54px;
+            vertical-align: middle;
+        }
+        .team-info-table td.label {
+            background-color: #f8fafc;
+            font-weight: 700;
+            color: #002d62;
+            text-align: center;
+        }
+        
+        .table-input {
+            width: 100%;
+            border: none;
+            outline: none;
+            font-size: 14px;
+            font-family: inherit;
+            color: #334155;
+            background: transparent;
+        }
+        .table-input::placeholder {
+            color: #cbd5e1;
+        }
+        
+        #selected-company-display {
+            font-weight: 700;
+            color: #008080;
+            font-size: 16px;
+            text-align: center;
+            background-color: #f0f7f7;
+            transition: all 0.3s ease;
+        }
+
+        /* 3. 섹션 가이드 및 기업 리스트 */
+        .guide-box {
+            background-color: #f0f7f7;
+            border-left: 5px solid #008080;
+            padding: 20px;
+            margin-bottom: 40px;
+            text-align: left;
+        }
+        .guide-box h3 { color: #005a5a; margin-bottom: 8px; font-size: 16px; }
+        .guide-box li { font-size: 13px; color: #475569; margin-bottom: 4px; list-style: inside; }
+
+        .company-select-zone {
+            margin-bottom: 40px;
+            padding: 20px;
+            background: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            border-radius: 8px;
+            text-align: left;
+        }
+        .company-select-zone h3 { font-size: 15px; margin-bottom: 15px; color: #002d62; }
+        .company-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+        
+        .comp-tag {
+            border: 1px solid #cbd5e1;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            background: #fff;
+            color: #64748b;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        .comp-tag:hover {
+            border-color: #008080;
+            color: #008080;
+            background-color: #f0f7f7;
+        }
+        .comp-tag.active {
+            background-color: #008080;
+            color: #ffffff;
+            border-color: #008080;
+            box-shadow: 0 2px 8px rgba(0, 128, 128, 0.2);
+        }
+
+        /* 4. 문항 레이아웃 (Step) */
+        .step-container { 
+            margin-bottom: 40px; 
+            text-align: left;
+            break-inside: avoid; 
+        }
+        .step-title {
+            font-size: 20px;
+            color: #002d62;
+            border-bottom: 2px solid #002d62;
+            padding-bottom: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .step-title span {
+            background: #002d62; color: white; font-size: 12px;
+            padding: 2px 8px; border-radius: 3px; font-family: 'Poppins', sans-serif;
+        }
+        
+        .question-item { margin-bottom: 25px; break-inside: avoid; }
+        .question-item label { display: block; font-weight: 700; font-size: 15px; margin-bottom: 6px; color: #1e293b; }
+        .tip-text { font-size: 13px; color: #008080; margin-bottom: 8px; font-weight: 500; display: flex; align-items: center; gap: 4px; }
+        
+        .input-textarea {
+            width: 100%; height: 110px; border: 1px solid #cbd5e1; border-radius: 6px;
+            padding: 12px; font-family: inherit; font-size: 14px; resize: none; background-color: #fafafa;
+        }
+
+        /* SWOT 그리드 */
+        .swot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .swot-box { border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; display: flex; flex-direction: column; }
+        .swot-box.s { border-top: 4px solid #10b981; background: #f0fdf4; }
+        .swot-box.w { border-top: 4px solid #ef4444; background: #fef2f2; }
+        .swot-box.o { border-top: 4px solid #3b82f6; background: #eff6ff; }
+        .swot-box.t { border-top: 4px solid #f59e0b; background: #fffbeb; }
+        .swot-box h4 { font-size: 14px; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
+
+        /* 투자 결정 라디오 */
+        .investment-choice {
+            display: flex; gap: 30px; margin-bottom: 15px; background: #f8fafc;
+            padding: 15px; border-radius: 6px; justify-content: center;
+        }
+        .choice-label { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+
+
+
+        /* 4-0. ETF 및 거시경제 활동지 추가 스타일 */
+        .concept-card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .concept-card { border: 1px solid #cbd5e1; border-radius: 10px; padding: 16px; background: #ffffff; break-inside: avoid; }
+        .concept-card h4 { color: #002d62; font-size: 16px; margin-bottom: 8px; display:flex; align-items:center; gap:8px; }
+        .concept-card p { font-size: 13.5px; color:#475569; margin-bottom: 8px; }
+        .compare-table, .macro-table { width:100%; border-collapse: collapse; margin: 12px 0 18px; font-size: 13px; }
+        .compare-table th, .compare-table td, .macro-table th, .macro-table td { border:1px solid #cbd5e1; padding:9px; text-align:center; vertical-align:middle; }
+        .compare-table th, .macro-table th { background:#002d62; color:#fff; font-weight:700; }
+        .compare-table td:first-child, .macro-table td:first-child { background:#f8fafc; font-weight:700; color:#002d62; }
+        .mini-choice-box { display:flex; flex-wrap:wrap; gap:12px; background:#f8fafc; padding:12px; border-radius:8px; border:1px dashed #cbd5e1; margin:8px 0 12px; }
+        .mini-choice { font-weight:700; font-size:13.5px; display:flex; align-items:center; gap:6px; }
+        .fill-line { display:inline-block; min-width:70px; border-bottom:1px solid #64748b; height:18px; vertical-align:baseline; }
+        .macro-note { background:#fffbeb; border-left:5px solid #f59e0b; padding:14px; border-radius:6px; margin-bottom:20px; font-size:13.5px; color:#78350f; }
+        .small-write-box { width:100%; height:64px; border:1px solid #cbd5e1; border-radius:6px; padding:10px; font-family:inherit; font-size:13.5px; resize:none; background:#fafafa; }
+        .portfolio-sum { background:#f0f7f7; border:1px solid #99f6e4; border-radius:8px; padding:15px; margin-top:12px; }
+        .keyword-pill { display:inline-block; padding:3px 8px; border-radius:999px; background:#e0f2f1; color:#005a5a; font-size:12px; font-weight:700; margin-right:4px; }
+
+        /* 5. 부록 프롬프트 테이블 */
+        .appendix-section { margin-top: 50px; border-top: 2px dashed #cbd5e1; padding-top: 40px; break-inside: avoid; }
+        .appendix-title { font-size: 22px; color: #002d62; text-align: center; margin-bottom: 25px; }
+        .prompt-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+        .prompt-table th, .prompt-table td { border: 1px solid #e2e8f0; padding: 10px; text-align: left; }
+        .prompt-table th { background-color: #002d62; color: white; font-weight: 700; text-align: center; }
+        .prompt-table td.cat-cell { font-weight: 700; color: #008080; background-color: #f8fafc; width: 22%; text-align: center; }
+        .prompt-table code { color: #b91c1c; background: #fef2f2; padding: 1px 3px; border-radius: 3px; font-weight: 600; }
+        .prompt-table tr { break-inside: avoid; }
+
+        /* 인쇄 설정 최적화 */
+        @media print {
+            body { background-color: #ffffff; padding: 0; }
+            .pdf-btn-container { display: none; }
+            .worksheet-container { box-shadow: none; padding: 0; width: 100%; }
+            .input-textarea { background-color: #ffffff; height: 130px; border: 1px solid #94a3b8; }
+            .comp-tag { border: 1px solid #cbd5e1; background: #fff !important; color: #64748b !important; }
+            .comp-tag.active { border: 2px solid #008080 !important; font-weight: bold; color: #008080 !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="pdf-btn-container">
+    <button class="pdf-btn" onclick="window.print()">
+        <i class="fa-solid fa-file-pdf"></i> PDF 파일로 저장 / 인쇄하기
+    </button>
+</div>
+
+<div class="worksheet-container">
+    
+    <header>
+        <div class="citi-header-text">Citi AI 재능기부단 5팀 AI Money Mentors</div>
+        <span class="main-tag">AI 융합 금융 교육 프로젝트</span>
+        <h1>AI 기반 실전 기업분석 및 투자 활동지</h1>
+        <p>인공지능 비서를 활용하여 기업의 가치를 탐색하고 현명한 투자 결정을 내려봅시다.</p>
+        
+        <table class="team-info-table">
+            <tr>
+<td class="label" style="width: 15%;">팀 이름</td>
+<td colspan="3" style="font-weight: bold;">
+<input type="text" class="table-input" placeholder="여기에 팀 이름을 입력하세요 (예: 금융대장)">
+</td>
+</tr>
+            <tr>
+                <td class="label">팀원 명단</td>
+                <td colspan="3">
+                    <input type="text" class="table-input" placeholder="발표자 및 팀원 이름을 수기로 입력하세요 (예: 발표자 홍길동 / 팀원 김철수, 이영희)">
+                </td>
+            </tr>
+        </table>
+    </header>
+
+    <div class="guide-box">
+        <h3><i class="fa-solid fa-circle-info"></i> 수행 지침</h3>
+        <ul>
+            <li>먼저 <strong>ETF와 경제지표</strong>를 이해한 뒤, 기업분석과 투자 의사결정을 연결해 보세요.</li>
+            <li>각 문항에 배치된 <strong>💡 부록1 추천 프롬프트 가이드</strong>를 확인하고 하단 부록1의 번호를 참고하여 질문하세요.</li>
+        </ul>
+    </div>
+
+
+
+    <div class="step-container">
+        <div class="step-title"><span>STEP 0</span> ETF와 거시경제 기초 이해</div>
+        <div class="macro-note">
+            <strong>활동 목표:</strong> 개별 기업에 투자하기 전, 시장 전체에 투자하는 ETF의 개념과 한국·미국 경제지표가 투자 판단에 어떤 영향을 주는지 이해합니다.
+        </div>
+
+        <div class="question-item">
+            <label>0-1. TIGER200과 VOO의 개념을 비교해봅시다.</label>
+            <table class="compare-table">
+                <thead>
+                    <tr><th>구분</th><th>TIGER200</th><th>VOO</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>투자 시장</td><td>한국 주식시장</td><td>미국 주식시장</td></tr>
+                    <tr><td>추종 지수</td><td>KOSPI200</td><td>S&amp;P500</td></tr>
+                    <tr><td>투자 대상</td><td>한국 대표 200개 기업</td><td>미국 대표 500개 기업</td></tr>
+                    <tr><td>대표 기업 예시</td><td>삼성전자, SK하이닉스 등</td><td>애플, 마이크로소프트, 엔비디아 등</td></tr>
+                    <tr><td>핵심 특징</td><td>한국 경제와 산업 흐름에 영향</td><td>미국 대형 우량기업 흐름에 영향</td></tr>
+                </tbody>
+            </table>
+            <p style="font-size:13.5px; color:#475569; margin-bottom:8px;">빈칸을 채우며 ETF 개념을 확인해보세요.</p>
+            <p style="font-size:14px; margin-bottom:6px;">① TIGER200은 대한민국 대표 기업 <span class="fill-line"></span>개에 분산 투자하는 ETF입니다.</p>
+            <p style="font-size:14px; margin-bottom:6px;">② VOO는 미국 대표 기업 <span class="fill-line"></span>개에 분산 투자하는 ETF입니다.</p>
+            <p style="font-size:14px; margin-bottom:10px;">③ ETF는 여러 종목을 한 번에 담아 투자하는 <span class="fill-line"></span> 투자 상품입니다.</p>
+            <div class="tip-text"><i class="fa-solid fa-lightbulb"></i> 생각해보기: 삼성전자 한 종목 투자와 TIGER200 투자 중 어느 쪽이 위험이 더 낮을까요?</div>
+            <div class="mini-choice-box">
+                <span class="mini-choice"><input type="radio" name="etf-risk"> 삼성전자 1개 기업</span>
+                <span class="mini-choice"><input type="radio" name="etf-risk"> TIGER200</span>
+            </div>
+            <textarea class="small-write-box" placeholder="선택한 이유를 적어보세요. 예: 여러 기업에 나누어 투자하면 한 기업의 실적 부진 위험을 줄일 수 있다."></textarea>
+        </div>
+
+        <div class="question-item">
+            <label>0-2. 한국시장 경제지표를 투자 판단에 연결해봅시다.</label>
+            <div class="concept-card-grid">
+                <div class="concept-card"><h4><i class="fa-solid fa-percent"></i> 기준금리</h4><p>한국은행이 정하는 대표 금리입니다. 금리가 오르면 대출 부담이 커지고, 주식시장에는 부담이 될 수 있습니다.</p></div>
+                <div class="concept-card"><h4><i class="fa-solid fa-chart-line"></i> GDP</h4><p>한 나라가 일정 기간 생산한 재화와 서비스의 가치입니다. GDP 성장은 경제활동이 활발하다는 신호입니다.</p></div>
+                <div class="concept-card"><h4><i class="fa-solid fa-cart-shopping"></i> CPI</h4><p>소비자물가지수입니다. CPI가 높으면 물가가 빠르게 오르고 있다는 뜻입니다.</p></div>
+                <div class="concept-card"><h4><i class="fa-solid fa-won-sign"></i> 환율</h4><p>1달러를 사기 위해 필요한 원화입니다. 환율 상승은 보통 원화 약세를 의미합니다.</p></div>
+            </div>
+            <table class="macro-table">
+                <thead><tr><th>경제지표</th><th>현재 상황 기록</th><th>주식시장 영향 판단</th></tr></thead>
+                <tbody>
+                    <tr><td>기준금리</td><td><input class="table-input" placeholder="예: 동결 / 인상 / 인하"></td><td><input class="table-input" placeholder="긍정 / 중립 / 부정"></td></tr>
+                    <tr><td>GDP</td><td><input class="table-input" placeholder="예: 성장률 상승"></td><td><input class="table-input" placeholder="긍정 / 중립 / 부정"></td></tr>
+                    <tr><td>CPI</td><td><input class="table-input" placeholder="예: 물가 안정 / 물가 상승"></td><td><input class="table-input" placeholder="긍정 / 중립 / 부정"></td></tr>
+                    <tr><td>환율</td><td><input class="table-input" placeholder="예: 원화 강세 / 원화 약세"></td><td><input class="table-input" placeholder="긍정 / 중립 / 부정"></td></tr>
+                </tbody>
+            </table>
+            <div class="mini-choice-box">
+                <span class="mini-choice"><input type="radio" name="korea-econ"> 매우 좋음</span>
+                <span class="mini-choice"><input type="radio" name="korea-econ"> 좋음</span>
+                <span class="mini-choice"><input type="radio" name="korea-econ"> 보통</span>
+                <span class="mini-choice"><input type="radio" name="korea-econ"> 나쁨</span>
+            </div>
+            <textarea class="small-write-box" placeholder="우리 팀의 한국경제 진단 이유를 작성하세요."></textarea>
+        </div>
+
+        <div class="question-item">
+            <label>0-3. 미국시장 경제지표를 투자 판단에 연결해봅시다.</label>
+            <div class="concept-card-grid">
+                <div class="concept-card"><h4><i class="fa-solid fa-building-columns"></i> Fed 금리</h4><p>미국 중앙은행이 정하는 금리입니다. 금리 인하는 주식시장에 긍정적일 수 있고, 금리 인상은 부담이 될 수 있습니다.</p></div>
+                <div class="concept-card"><h4><i class="fa-solid fa-basket-shopping"></i> 미국 CPI</h4><p>미국의 소비자물가 흐름입니다. CPI가 높으면 금리 인하가 늦어질 수 있습니다.</p></div>
+                <div class="concept-card"><h4><i class="fa-solid fa-user-clock"></i> 실업률</h4><p>일자리를 찾지 못한 사람의 비율입니다. 너무 높으면 경기 둔화 신호일 수 있습니다.</p></div>
+                <div class="concept-card"><h4><i class="fa-solid fa-microchip"></i> CAPEX</h4><p>기업의 설비투자 지출입니다. AI 데이터센터, 반도체 공장 같은 미래 성장 투자를 의미합니다.</p></div>
+            </div>
+            <table class="macro-table">
+                <thead><tr><th>경제지표</th><th>현재 상황 기록</th><th>미국 주식시장 영향 판단</th></tr></thead>
+                <tbody>
+                    <tr><td>Fed 금리</td><td><input class="table-input" placeholder="예: 동결 / 인상 / 인하"></td><td><input class="table-input" placeholder="긍정 / 중립 / 부정"></td></tr>
+                    <tr><td>CPI</td><td><input class="table-input" placeholder="예: 예상보다 높음 / 낮음"></td><td><input class="table-input" placeholder="긍정 / 중립 / 부정"></td></tr>
+                    <tr><td>실업률</td><td><input class="table-input" placeholder="예: 상승 / 하락"></td><td><input class="table-input" placeholder="긍정 / 중립 / 부정"></td></tr>
+                    <tr><td>CAPEX</td><td><input class="table-input" placeholder="예: AI 투자 확대"></td><td><input class="table-input" placeholder="긍정 / 중립 / 부정"></td></tr>
+                </tbody>
+            </table>
+            <div class="mini-choice-box">
+                <span class="mini-choice"><input type="radio" name="us-econ"> 매우 좋음</span>
+                <span class="mini-choice"><input type="radio" name="us-econ"> 좋음</span>
+                <span class="mini-choice"><input type="radio" name="us-econ"> 보통</span>
+                <span class="mini-choice"><input type="radio" name="us-econ"> 나쁨</span>
+            </div>
+            <textarea class="small-write-box" placeholder="우리 팀의 미국경제 진단 이유를 작성하세요."></textarea>
+        </div>
+
+        <div class="question-item portfolio-sum">
+            <label>0-4. ETF 투자전략 수립: TIGER200 vs VOO</label>
+            <p style="font-size:13.5px; color:#475569; margin-bottom:10px;">위의 경제지표 판단을 바탕으로 ETF 포트폴리오를 구성해보세요.</p>
+            <div class="mini-choice-box" style="background:#fff;">
+                <span class="mini-choice"><input type="radio" name="etf-strategy"> 한국시장 중심</span>
+                <span class="mini-choice"><input type="radio" name="etf-strategy"> 미국시장 중심</span>
+                <span class="mini-choice"><input type="radio" name="etf-strategy"> 한국·미국 균형 투자</span>
+            </div>
+            <table class="macro-table">
+                <thead><tr><th>투자상품</th><th>투자비중</th><th>선택 이유</th></tr></thead>
+                <tbody>
+                    <tr><td>TIGER200</td><td><input class="table-input" placeholder="____ %"></td><td><input class="table-input" placeholder="한국시장 판단 근거"></td></tr>
+                    <tr><td>VOO</td><td><input class="table-input" placeholder="____ %"></td><td><input class="table-input" placeholder="미국시장 판단 근거"></td></tr>
+                    <tr><td>합계</td><td><strong>100%</strong></td><td><span class="keyword-pill">분산투자</span><span class="keyword-pill">경제지표</span><span class="keyword-pill">장기투자</span></td></tr>
+                </tbody>
+            </table>
+            <textarea class="input-textarea" style="height:90px;" placeholder="최종 투자 논리를 작성하세요. 예: 우리 팀은 미국 CPI 안정과 AI CAPEX 확대를 근거로 VOO 비중을 높이고, 한국 반도체 회복 기대를 반영해 TIGER200도 함께 편입했다."></textarea>
+        </div>
+    </div>
+
+    <div class="company-select-zone">
+        <h3>📍 분석 대상 기업 (9개 기업 중 하나를 선택하세요. 선택한 항목은 색상이 변경됩니다)</h3>
+        <div class="company-tags">
+            <span class="comp-tag" onclick="selectCompany(this)">하이브</span>
+            <span class="comp-tag" onclick="selectCompany(this)">무신사</span>
+            <span class="comp-tag" onclick="selectCompany(this)">올리브영</span>
+            <span class="comp-tag" onclick="selectCompany(this)">로블록스</span>
+            <span class="comp-tag" onclick="selectCompany(this)">애플</span>
+            <span class="comp-tag" onclick="selectCompany(this)">테슬라</span>
+            <span class="comp-tag" onclick="selectCompany(this)">OpenAI</span>
+            <span class="comp-tag" onclick="selectCompany(this)">토스</span>
+            <span class="comp-tag" onclick="selectCompany(this)">삼성전자</span>
+        </div>
+    </div>
+
+    <div class="step-container">
+        <div class="step-title"><span>STEP 1</span> 비즈니스 모델 파악</div>
+        
+        <div class="question-item">
+            <label>1-1. 이 기업의 핵심 제품/서비스는 무엇이며, 어떤 문제를 해결하나요?</label>
+            <div class="tip-text"><i class="fa-solid fa-lightbulb"></i> 부록 참고 가이드: 하단 부록1의 <strong>[1번, 3번, 4번]</strong> 프롬프트 예시를 사용해보세요.</div>
+            <textarea class="input-textarea" placeholder="AI의 답변을 바탕으로 핵심 가치를 기록하세요."></textarea>
+        </div>
+        
+        <div class="question-item">
+            <label>1-2. 이 기업의 주된 수익원(매출 구조) 및 경쟁 구도는 어떻게 형성되어 있습니까?</label>
+            <div class="tip-text"><i class="fa-solid fa-lightbulb"></i> 부록 참고 가이드: 하단 부록1의 <strong>[2번, 5번]</strong> 프롬프트 예시를 사용해보세요.</div>
+            <textarea class="input-textarea" placeholder="구독료, 광고, 제품 판매 구조 및 핵심 라이벌 기업을 요약하여 작성하세요."></textarea>
+        </div>
+    </div>
+
+    <div class="step-container">
+        <div class="step-title"><span>STEP 2</span> SWOT 입체 분석</div>
+        <p style="font-size:13.5px; color:#64748b; margin-bottom:15px;">※ 하단 부록1의 <strong>[9번, 10번, 11번, 12번, 14번]</strong> 프롬프트 예시를 활용하여 내부 역량과 외부 환경을 종합 추출해 보세요.</p>
+        
+        <div class="swot-grid">
+            <div class="swot-box s">
+                <h4><strong>S - 강점</strong> <i class="fa-solid fa-dumbbell"></i></h4>
+                <div class="tip-text"><i class="fa-solid fa-circle-nodes"></i> 부록 <strong>[12번]</strong> 참고</div>
+                <textarea class="input-textarea" style="height:110px;" placeholder="경쟁사가 가질 수 없는 독점적 무기 등"></textarea>
+            </div>
+            <div class="swot-box w">
+                <h4><strong>W - 약점</strong> <i class="fa-solid fa-triangle-exclamation"></i></h4>
+                <div class="tip-text"><i class="fa-solid fa-circle-nodes"></i> 부록 <strong>[11번, 14번]</strong> 참고</div>
+                <textarea class="input-textarea" style="height:110px;" placeholder="경영진이 해결해야 할 시급한 내부 한계"></textarea>
+            </div>
+            <div class="swot-box o">
+                <h4><strong>O - 기회</strong> <i class="fa-solid fa-arrow-trend-up"></i></h4>
+                <div class="tip-text"><i class="fa-solid fa-circle-nodes"></i> 부록 <strong>[8번, 9번]</strong> 참고</div>
+                <textarea class="input-textarea" style="height:110px;" placeholder="기술 변화 등 외부 우호적 시장 트렌드"></textarea>
+            </div>
+            <div class="swot-box t">
+                <h4><strong>T - 위협</strong> <i class="fa-solid fa-shield-halved"></i></h4>
+                <div class="tip-text"><i class="fa-solid fa-circle-nodes"></i> 부록 <strong>[10번, 14번]</strong> 참고</div>
+                <textarea class="input-textarea" style="height:110px;" placeholder="성장을 방해하는 법적 규제 및 리스크"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <div class="step-container">
+        <div class="step-title"><span>STEP 3</span> 최신 이슈 및 미디어 리포트</div>
+        
+        <div class="question-item">
+            <label>3-1. 실시간 데이터 검색 AI를 통해 찾은 이 기업의 가장 결정적인 최근 이슈나 실적 동향은 어떠한가요?</label>
+            <div class="tip-text"><i class="fa-solid fa-lightbulb"></i> 부록 참고 가이드: 하단 부록1의 <strong>[21번, 22번, 24번, 25번]</strong> 프롬프트 예시를 사용해보세요.</div>
+            <textarea class="input-textarea" style="height:120px;" placeholder="뉴스 내용 브리핑 및 실적 리포트 핵심 요약을 요약 기록하세요."></textarea>
+        </div>
+        
+        <div class="question-item">
+            <label>3-2. 소셜 미디어나 대중 커뮤니티에서 평가하는 이 기업에 대한 브랜드 인지도와 평판(불만 지표 등)은 어떠한가요?</label>
+            <div class="tip-text"><i class="fa-solid fa-lightbulb"></i> 부록 참고 가이드: 하단 부록1의 <strong>[6번, 7번, 23번]</strong> 프롬프트 예시를 사용해보세요.</div>
+            <textarea class="input-textarea" style="height:110px;" placeholder="Z세대의 인지도 및 실제 사용자의 불만 요소 등을 종합 분석하세요."></textarea>
+        </div>
+    </div>
+
+    <div class="step-container">
+        <div class="step-title"><span>STEP 4</span> 투자 의사결정 및 최종 변론</div>
+        <p style="font-size:13.5px; color:#64748b; margin-bottom:15px;">※ 하단 부록1의 <strong>[16번, 17번, 18번, 20번]</strong> 가치 평가 분석 프롬프트를 바탕으로 시뮬레이션 후 최종 결정을 내리세요.</p>
+        
+        <div class="question-item">
+            <label style="text-align: center;">Q. 우리 팀은 분석한 종합 데이터를 토대로 이 기업에 최종 투자를 집행하시겠습니까?</label>
+            <div class="investment-choice">
+                <span class="choice-label"><input type="radio" name="invest"> 투자 집행 (BUY)</span>
+                <span class="choice-label"><input type="radio" name="invest"> 투자 보류 (HOLD)</span>
+            </div>
+        </div>
+        <div class="question-item">
+            <label>4-1. 그렇게 의사결정을 내리게 된 가장 핵심적인 투자 장점 혹은 방어적 위험 신호(Red Flag)는 무엇인가요?</label>
+            <div class="tip-text"><i class="fa-solid fa-lightbulb"></i> 부록 참고 가이드: 하단 부록1의 <strong>[16번, 17번]</strong> 프롬프트 결과 논거를 연계하여 기술하세요.</div>
+            <textarea class="input-textarea" style="height:140px;" placeholder="우리 팀을 가장 강력하게 설득시킨 지표나 핵심 리스크 방어 논거를 정리하세요."></textarea>
+        </div>
+        <div class="question-item">
+            <label>4-2. [결론] 우리 팀이 정의한 이 기업의 미래 한 줄 슬로건</label>
+            <textarea class="input-textarea" style="height:60px;" placeholder="예시: 'OpenAI는 인간의 한계를 뛰어넘는 지능의 보편화를 이끌 것이다.'"></textarea>
+        </div>
+    </div>
+
+    <div class="appendix-section">
+        <div class="appendix-title"><i class="fa-solid fa-book-bookmark"></i> 부록 1 : 기업분석 AI 실전 프롬프트 25선</div>
+        <table class="prompt-table">
+            <thead>
+                <tr><th>카테고리</th><th>명령어(프롬프트) 예시</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="cat-cell" rowspan="5">1. 기업 모델</td><td>1. "<code>[기업명]</code>이 뭐하는 회사인지 중학생 수준으로 3줄 요약해줘."</td></tr>
+                <tr><td>2. "<code>[기업명]</code>의 주 수익 구조를 표로 체계적으로 정리해줘."</td></tr>
+                <tr><td>3. "이 회사의 창업 역사와 시장에서 해결한 문제는 무엇인가요?"</td></tr>
+                <tr><td>4. "주요 타겟 고객층은 누구이며 그들이 열광하는 이유는 무엇인가요?"</td></tr>
+                <tr><td>5. "라이벌 기업 2곳을 명시하고 핵심 강점을 비교 분석해줘."</td></tr>
+                <tr><td class="cat-cell" rowspan="5">2. 외부 환경</td><td>6. "최근 6개월간 가장 많이 언급된 핵심 키워드 3개와 이유를 알려줘."</td></tr>
+                <tr><td>7. "Z세대 사이에서 이 기업의 브랜드 인지도는 어떤가요?"</td></tr>
+                <tr><td>8. "향후 3년간 이 산업군의 시장 성장 전망 규모는 어느 정도인가요?"</td></tr>
+                <tr><td>9. "현재 기술적 변화 중에서 이 기업에 가장 유리한 요소는 무엇인가요?"</td></tr>
+                <tr><td>10. "성장을 방해할 수 있는 법규나 거시경제적 위협은 무엇인가요?"</td></tr>
+                <tr><td class="cat-cell" rowspan="5">3. 핵심 역량</td><td>11. "내가 CEO라면 현재 가장 먼저 해결해야 할 약점은 무엇인가요?"</td></tr>
+                <tr><td>12. "경쟁사가 절대 따라올 수 없는 독점적 무기(IP, 기술 등)는 무엇인가요?"</td></tr>
+                <tr><td>13. "최근 추진 중인 신사업이나 신제품 개발 소식을 정리해줘."</td></tr>
+                <tr><td>14. "만약 5년 뒤 회사가 위기에 빠진다면 어떤 이유 때문일까요?"</td></tr>
+                <tr><td>15. "AI 기술 발전이 이 기업의 매출에 줄 직접적인 영향은 무엇일까요?"</td></tr>
+                <tr><td class="cat-cell" rowspan="5">4. 투자 가치</td><td>16. "초보 투자자에게 이 기업의 가장 매력적인 장점 2가지를 말해줘."</td></tr>
+                <tr><td>17. "투자 시 주의해야 할 위험 신호(Red Flag) 2가지는 무엇인가요?"</td></tr>
+                <tr><td>18. "최근 주가 등락의 주요 원인을 전문가 관점에서 요약해줘."</td></tr>
+                <tr><td>19. "현재 기업 가치(몸값)와 향후 상장(IPO) 계획에 대해 알려줘."</td></tr>
+                <tr><td>20. "경영진에게 던져야 할 가장 날카로운 질문 1가지는 무엇인가요?"</td></tr>
+                <tr><td class="cat-cell" rowspan="5">5. 최신 뉴스</td><td>21. "오늘 기준 핵심 뉴스 3개를 브리핑하고 주가 파급력을 분석해줘."</td></tr>
+                <tr><td>22. "최근 보도된 파트너십 소식이 기존 사업과 어떤 시너지를 낼까요?"</td></tr>
+                <tr><td>23. "각종 커뮤니티에서 이 기업 제품에 대한 불만 지표는 어떤가요?"</td></tr>
+                <tr><td>24. "최신 실적 리포트의 재무 요약을 투자자 관점에서 쉽게 정리해줘."</td></tr>
+                <tr><td>25. "오늘의 상황을 대변하는 키워드 5개와 그 당위성을 설명해줘."</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+
+<div class="appendix-section">
+<div class="appendix-title">부록 2 : 주식투자 기초용어 20선</div>
+<table class="prompt-table">
+<thead><tr><th>용어</th><th>설명</th></tr></thead>
+<tbody>
+<tr><td class="cat-cell">주식</td><td>주식은 회사의 일부를 나누어 가진 권리입니다. 내가 주식을 산다는 것은 그 회사의 작은 주인이 된다는 뜻이며, 회사가 성장하면 주식의 가치도 함께 오를 수 있습니다.</td></tr>
+<tr><td class="cat-cell">ETF</td><td>ETF는 여러 주식이나 자산을 한 바구니에 담아 만든 투자 상품입니다. 한 기업에만 투자하는 것보다 여러 기업에 나누어 투자하는 효과가 있어 위험을 줄이는 데 도움이 됩니다.</td></tr>
+<tr><td class="cat-cell">배당금</td><td>배당금은 회사가 벌어들인 이익 중 일부를 주주에게 나누어 주는 돈입니다. 모든 회사가 배당금을 주는 것은 아니며, 회사의 상황에 따라 금액이 달라질 수 있습니다.</td></tr>
+<tr><td class="cat-cell">시가총액</td><td>시가총액은 주식시장에서 평가받는 회사의 전체 가치입니다. 주가에 발행된 주식 수를 곱해 계산하며, 회사의 규모를 비교할 때 자주 사용합니다.</td></tr>
+<tr><td class="cat-cell">매수</td><td>매수는 주식이나 ETF를 사는 행동입니다. 투자자는 앞으로 가격이 오르거나 장기적으로 가치가 커질 것으로 기대할 때 매수를 선택합니다.</td></tr>
+<tr><td class="cat-cell">매도</td><td>매도는 가지고 있던 주식이나 ETF를 파는 행동입니다. 수익을 확정하거나 손실을 줄이기 위해 매도를 결정할 수 있습니다.</td></tr>
+<tr><td class="cat-cell">수익률</td><td>수익률은 내가 투자한 돈이 얼마나 늘었거나 줄었는지를 비율로 나타낸 것입니다. 예를 들어 10만 원을 투자해 11만 원이 되었다면 수익률은 10%입니다.</td></tr>
+<tr><td class="cat-cell">분산투자</td><td>분산투자는 돈을 한 곳에 모두 넣지 않고 여러 기업, 산업, 국가에 나누어 투자하는 방법입니다. 한 종목이 부진해도 전체 손실을 줄이는 데 도움이 됩니다.</td></tr>
+<tr><td class="cat-cell">변동성</td><td>변동성은 투자 상품의 가격이 얼마나 크게 오르내리는지를 뜻합니다. 변동성이 크면 큰 수익을 얻을 수도 있지만, 반대로 손실도 커질 수 있습니다.</td></tr>
+<tr><td class="cat-cell">강세장</td><td>강세장은 주식시장의 가격이 전반적으로 상승하는 흐름을 말합니다. 투자자들이 경제와 기업의 미래를 긍정적으로 볼 때 강세장이 나타나는 경우가 많습니다.</td></tr>
+<tr><td class="cat-cell">약세장</td><td>약세장은 주식시장의 가격이 전반적으로 하락하는 흐름을 말합니다. 경기 침체 우려, 금리 상승, 기업 실적 부진 등이 원인이 될 수 있습니다.</td></tr>
+<tr><td class="cat-cell">PER</td><td>PER은 주가가 회사의 이익에 비해 비싼지 싼지를 살펴보는 지표입니다. 숫자가 높다고 항상 나쁜 것은 아니지만, 투자자는 회사의 성장 가능성과 함께 비교해야 합니다.</td></tr>
+<tr><td class="cat-cell">PBR</td><td>PBR은 주가가 회사가 가진 자산 가치에 비해 어느 정도인지 보여주는 지표입니다. 회사의 자산 규모와 현재 주가 수준을 비교할 때 사용합니다.</td></tr>
+<tr><td class="cat-cell">EPS</td><td>EPS는 회사가 벌어들인 이익을 주식 1주당으로 나눈 값입니다. EPS가 높아지면 회사가 주주에게 더 많은 이익을 만들어내고 있다는 신호로 볼 수 있습니다.</td></tr>
+<tr><td class="cat-cell">IPO</td><td>IPO는 기업이 주식시장에 처음으로 상장해 일반 투자자들이 주식을 사고팔 수 있게 되는 과정입니다. 성장 가능성이 큰 기업이 IPO를 통해 자금을 모으기도 합니다.</td></tr>
+<tr><td class="cat-cell">금리</td><td>금리는 돈을 빌릴 때 내는 비용이자, 돈을 맡겼을 때 받을 수 있는 보상입니다. 금리가 오르면 기업의 대출 부담이 커져 주식시장에는 부담이 될 수 있습니다.</td></tr>
+<tr><td class="cat-cell">인플레이션</td><td>인플레이션은 물건과 서비스의 가격이 전반적으로 오르는 현상입니다. 물가가 너무 빠르게 오르면 소비와 기업 활동이 위축될 수 있어 투자 판단에 중요합니다.</td></tr>
+<tr><td class="cat-cell">환율</td><td>환율은 한 나라의 돈을 다른 나라 돈으로 바꿀 때의 비율입니다. 예를 들어 원/달러 환율이 오르면 1달러를 사기 위해 더 많은 원화가 필요하다는 뜻입니다.</td></tr>
+<tr><td class="cat-cell">리스크</td><td>리스크는 투자에서 손실이 발생할 가능성을 말합니다. 모든 투자에는 리스크가 있으므로 수익 가능성뿐 아니라 잃을 가능성도 함께 생각해야 합니다.</td></tr>
+<tr><td class="cat-cell">장기투자</td><td>장기투자는 짧은 가격 변동에 흔들리지 않고 오랜 기간 투자 상품을 보유하는 방법입니다. 좋은 기업이나 시장이 시간이 지나며 성장할 것이라고 믿고 투자할 때 활용합니다.</td></tr>
+</tbody></table></div>
+
+</div>
+
+<script>
+    function selectCompany(element) {
+const tags=document.querySelectorAll('.comp-tag');
+tags.forEach(tag=>tag.classList.remove('active'));
+element.classList.add('active');
+}
+</script>
+
+</body>
+</html>
